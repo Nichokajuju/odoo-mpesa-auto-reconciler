@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="mpesa_root_menu"
+              name="M-Pesa"
+              sequence="100"/>
+
+    <menuitem id="mpesa_transactions_menu"
+              name="Transactions"
+              parent="mpesa_root_menu"
+              action="mpesa_transaction_action"
+              sequence="10"/>
+
+</odoo>
