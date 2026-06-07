@@ -1,14 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <!-- Root Menu -->
     <menuitem id="mpesa_root_menu"
               name="M-Pesa"
               sequence="100"/>
 
+    <!-- Dashboard Menu -->
+    <menuitem id="mpesa_dashboard_menu"
+              name="Dashboard"
+              parent="mpesa_root_menu"
+              action="mpesa_dashboard_action"
+              sequence="5"/>
+
+    <!-- Transactions Menu -->
     <menuitem id="mpesa_transactions_menu"
               name="Transactions"
               parent="mpesa_root_menu"
               action="mpesa_transaction_action"
               sequence="10"/>
+
+    <!-- Today's Transactions Menu -->
+    <menuitem id="mpesa_today_menu"
+              name="Today's Transactions"
+              parent="mpesa_root_menu"
+              action="mpesa_today_action"
+              sequence="15"/>
 
 </odoo>

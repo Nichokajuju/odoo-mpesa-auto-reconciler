@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Graph View - pie chart by state -->
+    <record id="mpesa_transaction_view_graph" model="ir.ui.view">
+        <field name="name">mpesa.transaction.view.graph</field>
+        <field name="model">mpesa.transaction</field>
+        <field name="arch" type="xml">
+            <graph string="M-Pesa Transactions" type="pie">
+                <field name="state" type="row"/>
+                <field name="amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot View - breakdown by state and transaction type -->
+    <record id="mpesa_transaction_view_pivot" model="ir.ui.view">
+        <field name="name">mpesa.transaction.view.pivot</field>
+        <field name="model">mpesa.transaction</field>
+        <field name="arch" type="xml">
+            <pivot string="M-Pesa Summary">
+                <field name="state" type="row"/>
+                <field name="transaction_type" type="col"/>
+                <field name="amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Dashboard Action -->
+    <record id="mpesa_dashboard_action" model="ir.actions.act_window">
+        <field name="name">M-Pesa Dashboard</field>
+        <field name="res_model">mpesa.transaction</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No transactions yet!
+            </p>
+            <p>Start matching and reconciling M-Pesa transactions to see your dashboard.</p>
+        </field>
+    </record>
+
+    <!-- Today's Transactions Action -->
+    <record id="mpesa_today_action" model="ir.actions.act_window">
+        <field name="name">Today's Transactions</field>
+        <field name="res_model">mpesa.transaction</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No transactions today yet!
+            </p>
+        </field>
+    </record>
+
+</odoo>

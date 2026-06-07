@@ -9,6 +9,7 @@
         'security/ir.model.access.csv',
         'data/mpesa_data.xml',
         'views/mpesa_transaction_views.xml',
+        'views/mpesa_dashboard_views.xml',
         'views/mpesa_menus.xml',
     ],
     'installable': True,
