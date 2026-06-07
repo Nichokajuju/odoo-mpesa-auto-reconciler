@@ -80,14 +80,12 @@ class MpesaTransaction(models.Model):
                 ('payment_state', 'not in', ['paid', 'in_payment']),
             ]
 
-            # Priority 1: match by reference against invoice name
             if rec.reference:
                 invoice = self.env['account.move'].search(
                     domain_base + [('name', 'ilike', rec.reference)],
                     limit=1
                 )
 
-            # Priority 2: match by amount
             if not invoice:
                 invoice = self.env['account.move'].search(
                     domain_base + [('amount_total', '=', rec.amount)],
@@ -122,7 +120,6 @@ class MpesaTransaction(models.Model):
 
             invoice = rec.invoice_id
 
-            # Find M-Pesa journal, fall back to first bank journal
             journal = self.env['account.journal'].search([
                 ('name', 'ilike', 'mpesa'),
                 ('type', '=', 'bank'),
@@ -136,7 +133,6 @@ class MpesaTransaction(models.Model):
                     'No bank journal found. Please create an M-Pesa journal in Accounting > Configuration > Journals.'
                 )
 
-            # Create payment
             payment = self.env['account.payment'].create({
                 'payment_type': 'inbound',
                 'partner_type': 'customer',
@@ -148,10 +144,8 @@ class MpesaTransaction(models.Model):
                 'memo': 'M-Pesa: %s' % rec.transaction_id,
             })
 
-            # Post the payment
             payment.action_post()
 
-            # Reconcile payment against invoice
             invoice_lines = invoice.line_ids.filtered(
                 lambda l: l.account_id.account_type == 'asset_receivable'
                 and not l.reconciled
@@ -168,7 +162,6 @@ class MpesaTransaction(models.Model):
                     'Could not find receivable lines to reconcile for transaction %s.' % rec.transaction_id
                 )
 
-            # Update transaction
             rec.payment_id = payment.id
             rec.state = 'reconciled'
             rec.notes = 'Reconciled. Payment: %s' % payment.name
@@ -181,3 +174,53 @@ class MpesaTransaction(models.Model):
             rec.invoice_id = False
             rec.partner_id = False
             rec.notes = 'Reset to pending.'
+
+    def action_batch_match(self):
+        """Match all selected pending transactions to invoices."""
+        pending = self.filtered(lambda r: r.state == 'pending')
+        if not pending:
+            raise UserError('No pending transactions selected.')
+        pending.action_match_invoice()
+        matched = self.filtered(lambda r: r.state == 'matched')
+        failed = self.filtered(lambda r: r.state == 'failed')
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Batch Match Complete',
+                'message': '%d matched, %d failed.' % (len(matched), len(failed)),
+                'type': 'success' if matched else 'warning',
+                'sticky': False,
+            }
+        }
+
+    def action_batch_reconcile(self):
+        """Reconcile all selected matched transactions."""
+        matched = self.filtered(lambda r: r.state == 'matched')
+        if not matched:
+            raise UserError('No matched transactions selected. Run Match Invoice first.')
+
+        success = 0
+        failed_list = []
+
+        for rec in matched:
+            try:
+                rec.action_reconcile()
+                success += 1
+            except Exception as e:
+                failed_list.append('%s: %s' % (rec.transaction_id, str(e)))
+
+        message = '%d reconciled successfully.' % success
+        if failed_list:
+            message += ' %d failed: %s' % (len(failed_list), ', '.join(failed_list))
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Batch Reconcile Complete',
+                'message': message,
+                'type': 'success' if not failed_list else 'warning',
+                'sticky': True,
+            }
+        }

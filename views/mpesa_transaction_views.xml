@@ -11,6 +11,14 @@
                   decoration-warning="state == 'matched'"
                   decoration-danger="state == 'failed'"
                   decoration-muted="state == 'pending'">
+                <header>
+                    <button name="action_batch_match"
+                            string="Batch Match"
+                            type="object"/>
+                    <button name="action_batch_reconcile"
+                            string="Batch Reconcile"
+                            type="object"/>
+                </header>
                 <field name="transaction_id"/>
                 <field name="transaction_date"/>
                 <field name="amount"/>
